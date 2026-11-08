@@ -464,7 +464,7 @@ class MenuAdministrador(Menu):
                             choices= ["TARJETA","TRANSFERENCIA","EFECTIVO"]
                         ).ask()
                         pago_param = FormaPago[pago_select]
-                        self._ped_servicio.cambiar_estado(id_ped,pago_param)
+                        self._ped_servicio.cambiar_forma_pago(id_ped,pago_param)
                         print(Fore.GREEN + "✓ Forma de pago actualizada")
                         continuar()
 
