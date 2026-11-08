@@ -20,7 +20,7 @@ El desarrollo del programa ha sido dividido en capas con responsabilidades aisla
 -'/excepciones' y '/enums': Capas de soporte para tipado seguro y violaciones a las reglas de negocio personalizados bajo la clase padre 'FoodStoreError'<br>
 <br>
 Archivo ejecutable<br>
-En la carpeta "/ejecutable" se encuentran todos los archivos y carpetas de dependencia para que funcione dicho ejecutable. Este mismo tiene un acceso directo a la carpeta raiz con el nombre "FoodStore.exe", su funcionamiento es igual al usarlo en VStudio<br>
+En la carpeta raíz se encuentra el ejecutable del programa con el nombre "FoodStore.exe" creado gracias a la libreria externa pyinstaller, su funcionamiento es exactamente igual al usarlo en VStudio, simplifica la forma de ejecutar el programa<br>
 <br>
 Librerías de terceros: Questionary, Colorama, PyInstaller<br>
 GitHub repositorio: https://github.com/Isma54/UTN_TPI_Programacion2<br>
