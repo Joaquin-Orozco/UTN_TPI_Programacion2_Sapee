@@ -19,7 +19,7 @@ El desarrollo del programa ha sido dividido en capas con responsabilidades aisla
 -'/consola': Capa que contiene las interfaces graficas de la consola mediante menus interactivos ('menu.py','menu_administrador.py','menu_cliente.py')<br>
 -'/excepciones' y '/enums': Capas de soporte para tipado seguro y violaciones a las reglas de negocio personalizados bajo la clase padre 'FoodStoreError'<br>
 <br>
-Archivo ejecutable
+Archivo ejecutable<br>
 En la carpeta "/ejecutable" se encuentran todos los archivos y carpetas de dependencia para que funcione dicho ejecutable. Este mismo tiene un acceso directo a la carpeta raiz con el nombre "FoodStore.exe", su funcionamiento es igual al usarlo en VStudio<br>
 <br>
 Librerías de terceros: Questionary, Colorama, PyInstaller<br>
