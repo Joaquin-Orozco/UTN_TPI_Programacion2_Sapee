@@ -1,6 +1,5 @@
 # TPI_Programacion2
-Sistema de gestión de pedidos de comida en consola. El programa aplica los conceptos de POO para procesar, validar y organizar el flujo<br>
-de un comercio de comida rapida mediante el uso de python.<br>
+Sistema de gestión de pedidos de comida en consola. El programa aplica los conceptos de POO para procesar, validar y organizar el flujo de un comercio de comida rapida mediante el uso de python.<br>
 <br>
 Universidad Tecnológica Nacional<br>
 Cátedra: 1PRO6, Comisión 6, Programacion 2<br>
