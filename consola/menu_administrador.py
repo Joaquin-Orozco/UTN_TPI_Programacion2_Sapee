@@ -1,4 +1,4 @@
-from consola.menu import Menu,continuar,limpiar_consola
+from consola.menu import Menu, continuar, limpiar_consola, seleccionar_enumerado
 from enums.enumerados import Rol,Estado,FormaPago
 from excepciones.food_store_error import FoodStoreError
 import questionary
@@ -6,7 +6,7 @@ from colorama import Fore,init
 init(autoreset=True)
 
 class MenuAdministrador(Menu):
-    def mostrar(self):
+    def mostrar(self) -> bool:
         while True:
             limpiar_consola()
             opcion = questionary.select(
@@ -38,7 +38,7 @@ class MenuAdministrador(Menu):
                 print(Fore.RED + "X Ingrese un numero valido")
                 continuar()
 
-    def _menu_categorias(self):
+    def _menu_categorias(self) -> None:
         while True:
             limpiar_consola()
             seleccion = questionary.select(
@@ -50,7 +50,7 @@ class MenuAdministrador(Menu):
                     case "1. Listar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- LISTA DE CATEGORIAS ---")
-                        categorias = self._cat_servicio.listar()
+                        categorias = self._cat_servicio.listar(self._usuario)
                         if not categorias:
                             print(Fore.YELLOW + "! No hay categorias existentes")
                             continuar()
@@ -64,14 +64,16 @@ class MenuAdministrador(Menu):
                         print(Fore.LIGHTBLUE_EX + "--- NUEVA CATEGORIA ---")
                         nombre= input("Nombre: ")
                         descripcion = input("Descripcion: ")
-                        c = self._cat_servicio.crear_categoria(nombre,descripcion)
+                        c = self._cat_servicio.crear_categoria(
+                            self._usuario, nombre, descripcion
+                        )
                         print(Fore.GREEN + f"✓ Categoria creada con exito con id: {c.id}")
                         continuar()
 
                     case "3. Editar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- EDITAR CATEGORIA ---")
-                        categorias = self._cat_servicio.listar()
+                        categorias = self._cat_servicio.listar(self._usuario)
                         if not categorias:
                             print(Fore.YELLOW + "! No hay categorias disponibles para actualizar")
                             continuar()
@@ -79,19 +81,21 @@ class MenuAdministrador(Menu):
                         for cat in categorias:
                             print(cat)
                         id_cat = int(input("ID de la categoria a editar: "))
-                        self._cat_servicio.buscar_por_id(id_cat)
+                        self._cat_servicio.buscar_por_id(id_cat, self._usuario)
                         nuevo_nombre = input("Nuevo nombre (Enter para conservar): ")
                         nueva_descrip = input("Nueva descripcion (Enter para conservar): ")
                         nombre_param = nuevo_nombre if nuevo_nombre.strip() != "" else None
                         descrip_param = nueva_descrip if nueva_descrip.strip() != "" else None
-                        self._cat_servicio.editar(id_cat, nombre_param, descrip_param)
+                        self._cat_servicio.editar(
+                            self._usuario, id_cat, nombre_param, descrip_param
+                        )
                         print(Fore.GREEN + "✓ Categoria actualizada con exito")
                         continuar()
 
                     case "4. Eliminar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- ELIMINAR CATEGORIA (BAJA LOGICA) ---")
-                        categorias = self._cat_servicio.listar()
+                        categorias = self._cat_servicio.listar(self._usuario)
                         if not categorias:
                             print(Fore.YELLOW + "! No hay categorias disponibles para dar de baja")
                             continuar()
@@ -106,7 +110,7 @@ class MenuAdministrador(Menu):
                         ).ask()
                         match confirmar:
                             case "Si":
-                                self._cat_servicio.eliminar(id_cat)
+                                self._cat_servicio.eliminar(self._usuario, id_cat)
                                 print(Fore.GREEN + "✓ Categoria eliminada logicamente")
                                 continuar()
 
@@ -127,7 +131,7 @@ class MenuAdministrador(Menu):
                 print(Fore.RED + f"X Error de negocio: {e}")
                 continuar()
 
-    def _menu_productos(self):
+    def _menu_productos(self) -> None:
         while True:
             limpiar_consola()
             seleccion = questionary.select(
@@ -139,7 +143,7 @@ class MenuAdministrador(Menu):
                     case "1. Listar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- LISTA DE PRODUCTOS ---")
-                        productos = self._prod_servicio.listar()
+                        productos = self._prod_servicio.listar(self._usuario)
                         if not productos:
                             print(Fore.YELLOW + "! No hay productos disponibles con stock")
                             continuar()
@@ -152,7 +156,7 @@ class MenuAdministrador(Menu):
                     case "2. Crear":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- NUEVO PRODUCTO ---")
-                        categorias = self._cat_servicio.listar()
+                        categorias = self._cat_servicio.listar(self._usuario)
                         if not categorias:
                             print(Fore.YELLOW + "! No se pueden crear productos si no existen categorias primero")
                             continuar()
@@ -161,7 +165,9 @@ class MenuAdministrador(Menu):
                         for cat in categorias:
                             print(cat)
                         id_cat = int(input("ID de la categoria para el producto: "))
-                        self._cat_servicio.buscar_por_id(id_cat)
+                        categoria = self._cat_servicio.buscar_por_id(
+                            id_cat, self._usuario
+                        )
                         nombre = input("Nombre: ")
                         descripcion = input("Descripcion: ")
                         precio = float(input("Precio: "))
@@ -172,16 +178,26 @@ class MenuAdministrador(Menu):
                             message= "¿Esta disponible para la venta?",
                             choices= ["Si","No"]
                         ).ask()
+                        if disp_input is None:
+                            continue
                         disponible = True if disp_input == "Si" else False
-                        nuevo_product = self._prod_servicio.crear_producto(nombre,precio,descripcion,stock,imagen,disponible)
-                        self._cat_servicio.asociar_producto_a_categoria(id_cat,nuevo_product)
+                        nuevo_product = self._prod_servicio.crear_producto(
+                            self._usuario,
+                            categoria,
+                            nombre,
+                            precio,
+                            descripcion,
+                            stock,
+                            imagen,
+                            disponible,
+                        )
                         print(Fore.GREEN + f"✓ Producto creado con exito con id: {nuevo_product.id}")
                         continuar()
 
                     case "3. Editar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- EDITAR PRODUCTO ---")
-                        productos = self._prod_servicio.listar()
+                        productos = self._prod_servicio.listar(self._usuario)
                         if not productos:
                             print(Fore.YELLOW + "! No hay productos para editar")
                             continuar()
@@ -190,13 +206,19 @@ class MenuAdministrador(Menu):
                             print(p)
 
                         id_prod = int(input("ID del producto a editar: "))
-                        self._prod_servicio.buscar_por_id(id_prod)
+                        self._prod_servicio.buscar_por_id(id_prod, self._usuario)
 
                         nuevo_nombre = input("Nuevo nombre (Enter para conservar): ")
                         nuevo_precio = input("Nuevo precio (Enter para conservar): ")
                         nueva_descripcion = input("Nueva descripcion (Enter para conservar): ")
                         nuevo_stock = input("Nuevo stock (Enter para conservar): ")
                         nueva_img = input("Nueva imagen (Enter para conservar): ")
+                        categorias = self._cat_servicio.listar(self._usuario)
+                        for categoria in categorias:
+                            print(categoria)
+                        nueva_categoria = input(
+                            "ID de nueva categoría (Enter para conservar): "
+                        )
                         disp_actualizar = questionary.select(
                             message= "¿El producto a actualizar esta disponible?",
                             choices= ["Si","No","Conservar"]
@@ -213,15 +235,31 @@ class MenuAdministrador(Menu):
                         desc_param = nueva_descripcion if nueva_descripcion.strip() != "" else None
                         stock_param = int(nuevo_stock) if nuevo_stock.strip() != "" else None
                         img_param = nueva_img if nueva_img.strip() != "" else None                   
-
-                        self._prod_servicio.editar(id_prod,nom_param,precio_param,desc_param,stock_param,img_param,disponible_param)
+                        categoria_param = (
+                            self._cat_servicio.buscar_por_id(
+                                int(nueva_categoria), self._usuario
+                            )
+                            if nueva_categoria.strip()
+                            else None
+                        )
+                        self._prod_servicio.editar(
+                            self._usuario,
+                            id_prod,
+                            nom_param,
+                            precio_param,
+                            desc_param,
+                            stock_param,
+                            img_param,
+                            disponible_param,
+                            categoria_param,
+                        )
                         print(Fore.GREEN + "✓ Producto actualizado con exito")
                         continuar()
 
                     case "4. Eliminar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- ELIMINAR PRODUCTO (BAJA LOGICA) ---")
-                        productos = self._prod_servicio.listar()
+                        productos = self._prod_servicio.listar(self._usuario)
                         if not productos:
                             print(Fore.YELLOW + "! No hay productos disponibles para dar de baja")
                             continuar()
@@ -235,7 +273,7 @@ class MenuAdministrador(Menu):
                         ).ask()
                         match confirmar:
                             case "Si":
-                                self._prod_servicio.eliminar(id_prod)
+                                self._prod_servicio.eliminar(self._usuario, id_prod)
                                 print(Fore.GREEN + "✓ Producto eliminado logicamente")
                                 continuar()
 
@@ -256,7 +294,7 @@ class MenuAdministrador(Menu):
                 print(Fore.RED + f"X Error de negocio: {e}")
                 continuar()
 
-    def _menu_usuarios(self):
+    def _menu_usuarios(self) -> None:
         while True:
             limpiar_consola()
             seleccion = questionary.select(
@@ -268,7 +306,7 @@ class MenuAdministrador(Menu):
                     case "1. Listar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- LISTA DE USUARIOS REGISTRADOS ---")
-                        usuarios = self._usu_servicio.listar()
+                        usuarios = self._usu_servicio.listar(self._usuario)
                         if not usuarios:
                             print(Fore.YELLOW + "! No hay usuarios registrados")
                             continuar()
@@ -286,23 +324,31 @@ class MenuAdministrador(Menu):
                         celular = input("Celular: ")
                         contrasenia = input("Contraseña: ")
 
-                        rol_elegir = questionary.select(
-                            message= "Seleccione el rol:",
-                            choices= ["ADMIN","USUARIO"]
-                        ).ask()
-                        rol_param = Rol.ADMIN if rol_elegir == "ADMIN" else Rol.USUARIO
-                        nuevo_usuario = self._usu_servicio.crear_usuario(nombre,apellido,mail,celular,contrasenia,rol_param)
+                        rol_param = seleccionar_enumerado(
+                            "Seleccione el rol:", Rol
+                        )
+                        if rol_param is None:
+                            continue
+                        nuevo_usuario = self._usu_servicio.crear_usuario(
+                            self._usuario,
+                            nombre,
+                            apellido,
+                            mail,
+                            celular,
+                            contrasenia,
+                            rol_param,
+                        )
                         print(Fore.GREEN + f"✓ Usuario creado con exito con id: {nuevo_usuario.id}")
                         continuar()
 
                     case "3. Editar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- EDITAR DATOS DE USUARIO ---")
-                        usuarios= self._usu_servicio.listar()
+                        usuarios = self._usu_servicio.listar(self._usuario)
                         for u in usuarios:
                             print(u)
                         id_usu = int(input("ID del usuario a editar: "))
-                        self._usu_servicio.buscar_por_id(id_usu)
+                        self._usu_servicio.buscar_por_id(id_usu, self._usuario)
 
                         nuevo_nom = input("Nuevo nombre (Enter para conservar): ")
                         nuevo_ape = input("Nuevo apellido (Enter para conservar): ")
@@ -310,14 +356,13 @@ class MenuAdministrador(Menu):
                         nuevo_cel = input("Nuevo celular (Enter para conservar): ")
                         nueva_contra = input("Nueva contraseña (Enter para conservar): ")
                         nuevo_rol = questionary.select(
-                            message= "¿Desea cambiar el rol?",
-                            choices= ["Cambiar a ADMIN", "Cambiar a USUARIO", "Conservar actual"]
+                            message="¿Desea cambiar el rol?",
+                            choices=["1. ADMIN", "2. USUARIO", "0. Conservar actual"],
                         ).ask()
-                        rol_param = None
-                        if nuevo_rol == "Cambiar a ADMIN":
-                            rol_param = Rol.ADMIN
-                        elif nuevo_rol == "Cambiar a USUARIO":
-                            rol_param = Rol.USUARIO
+                        rol_param = {
+                            "1. ADMIN": Rol.ADMIN,
+                            "2. USUARIO": Rol.USUARIO,
+                        }.get(nuevo_rol)
 
                         nom_param = nuevo_nom if nuevo_nom.strip() != "" else None
                         ape_param = nuevo_ape if nuevo_ape.strip() != "" else None
@@ -325,14 +370,23 @@ class MenuAdministrador(Menu):
                         cel_param = nuevo_cel if nuevo_cel.strip() != "" else None
                         contra_param = nueva_contra if nueva_contra.strip() != "" else None
 
-                        self._usu_servicio.editar(id_usu,nom_param,ape_param,mail_param,cel_param,contra_param,rol_param)
+                        self._usu_servicio.editar(
+                            self._usuario,
+                            id_usu,
+                            nom_param,
+                            ape_param,
+                            mail_param,
+                            cel_param,
+                            contra_param,
+                            rol_param,
+                        )
                         print(Fore.GREEN + "✓ Usuario actualizado con exito")
                         continuar()
 
                     case "4. Eliminar":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- ELIMINAR USUARIO ---")
-                        usuarios = self._usu_servicio.listar()
+                        usuarios = self._usu_servicio.listar(self._usuario)
                         for u in usuarios:
                             print(u)
 
@@ -343,7 +397,7 @@ class MenuAdministrador(Menu):
                         ).ask()
                         match confirmar:
                             case "Si":
-                                self._usu_servicio.eliminar(id_usu,self._usuario.id)
+                                self._usu_servicio.eliminar(self._usuario, id_usu)
                                 print(Fore.GREEN + "✓ Usuario eliminado logicamente")
                                 continuar()
 
@@ -364,7 +418,7 @@ class MenuAdministrador(Menu):
                 print(Fore.RED + f"X Error de negocio: {e}")
                 continuar()
 
-    def _menu_pedidos(self):
+    def _menu_pedidos(self) -> None:
         while True:
             limpiar_consola()
             seleccion = questionary.select(
@@ -376,7 +430,7 @@ class MenuAdministrador(Menu):
                     case "1. Listar todos los pedidos":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- HISTORIAL GENERAL DE PEDIDOS ---")
-                        pedidos = self._ped_servicio.listar()
+                        pedidos = self._ped_servicio.listar(self._usuario)
                         if not pedidos:
                             print(Fore.YELLOW + "! No hay pedidos registrados en el sistema")
                             continuar()
@@ -390,28 +444,34 @@ class MenuAdministrador(Menu):
                     case "2. Crear pedido con detalles":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- CREAR PEDIDO CON DETALLES ---")
-                        usuarios = self._usu_servicio.listar()
+                        usuarios = self._usu_servicio.listar(self._usuario)
                         for u in usuarios:
                             print(u)
                         id_usu = int(input("ID del usuario (cliente) que realiza el pedido: "))
-                        usuario_ped = self._usu_servicio.buscar_por_id(id_usu)
-                        pago_select = questionary.select(
-                            message= "Seleccione la forma de pago",
-                            choices= ["TARJETA","TRANSFERENCIA","EFECTIVO"]
-                        ).ask()
-                        pago_param = FormaPago[pago_select]
+                        usuario_ped = self._usu_servicio.buscar_por_id(
+                            id_usu, self._usuario
+                        )
+                        pago_param = seleccionar_enumerado(
+                            "Seleccione la forma de pago:", FormaPago
+                        )
+                        if pago_param is None:
+                            continue
 
                         carrito = []
                         while True:
                             limpiar_consola()
                             print("--- AGREGANDO PRODUCTOS AL PEDIDO ---")
-                            productos = self._prod_servicio.listar_disponibles_clientes()
+                            productos = self._prod_servicio.listar_disponibles_clientes(
+                                self._usuario
+                            )
                             for p in productos:
                                 print(p)
                             id_prod = int(input("ID del producto a agregar (0 para terminar el carrito): "))
                             if id_prod == 0:
                                 break
-                            prod_ped = self._prod_servicio.buscar_por_id(id_prod)
+                            prod_ped = self._prod_servicio.buscar_por_id(
+                                id_prod, self._usuario
+                            )
                             cantidad = int(input(f"Cantidad de {prod_ped.nombre}: "))
                             carrito.append((cantidad,prod_ped))
                             print(Fore.GREEN + f"✓ {prod_ped.nombre} (x{cantidad}) añadido al carrito")
@@ -421,7 +481,9 @@ class MenuAdministrador(Menu):
                             print(Fore.YELLOW + "! Carrito vacio. Pedido cancelado")
                             continuar()
                             continue
-                        pedido_final = self._ped_servicio.crear_pedido_con_detalles(pago_param,usuario_ped,carrito)
+                        pedido_final = self._ped_servicio.crear_pedido_con_detalles(
+                            self._usuario, pago_param, usuario_ped, carrito
+                        )
                         print(Fore.GREEN + f"✓ Pedido creado con exito con id: {pedido_final.id}")
                         print(Fore.LIGHTGREEN_EX + f"Total consolidado: ${pedido_final.total:.2f}")
                         continuar()
@@ -429,7 +491,7 @@ class MenuAdministrador(Menu):
                     case "3. Cambiar estado de un pedido":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- ACTUALIZAR ESTADO DE PEDIDO ---")
-                        pedidos = self._ped_servicio.listar()
+                        pedidos = self._ped_servicio.listar(self._usuario)
                         if not pedidos:
                             print(Fore.YELLOW + "! No hay pedidos registrados en el sistema")
                             continuar()
@@ -438,19 +500,21 @@ class MenuAdministrador(Menu):
                         for ped in pedidos:
                             print(ped)
                         id_ped = int(input("ID del pedido a modificar: "))
-                        estado_select = questionary.select(
-                            message= "Seleccione el nuevo estado:",
-                            choices=["PENDIENTE","CONFIRMADO","TERMINADO","CANCELADO"]
-                        ).ask()
-                        estado_param = Estado[estado_select]
-                        self._ped_servicio.cambiar_estado(id_ped, estado_param)
+                        estado_param = seleccionar_enumerado(
+                            "Seleccione el nuevo estado:", Estado
+                        )
+                        if estado_param is None:
+                            continue
+                        self._ped_servicio.cambiar_estado(
+                            self._usuario, id_ped, estado_param
+                        )
                         print(Fore.GREEN + "✓ Estado actualizado con exito y stock recalculado si correspondia")
                         continuar()
 
                     case "4. Cambiar forma de pago":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- CAMBIAR FORMA DE PAGO ---")
-                        pedidos = self._ped_servicio.listar()
+                        pedidos = self._ped_servicio.listar(self._usuario)
                         if not pedidos:
                             print(Fore.YELLOW + "! No hay pedidos registrados en el sistema")
                             continuar()
@@ -459,19 +523,21 @@ class MenuAdministrador(Menu):
                         for ped in pedidos:
                             print(ped)
                         id_ped = int(input("ID del pedido a modificar: "))
-                        pago_select = questionary.select(
-                            message= "Seleccione el nuevo metodo de pago:",
-                            choices= ["TARJETA","TRANSFERENCIA","EFECTIVO"]
-                        ).ask()
-                        pago_param = FormaPago[pago_select]
-                        self._ped_servicio.cambiar_forma_pago(id_ped,pago_param)
+                        pago_param = seleccionar_enumerado(
+                            "Seleccione el nuevo método de pago:", FormaPago
+                        )
+                        if pago_param is None:
+                            continue
+                        self._ped_servicio.cambiar_forma_pago(
+                            self._usuario, id_ped, pago_param
+                        )
                         print(Fore.GREEN + "✓ Forma de pago actualizada")
                         continuar()
 
                     case "5. Eliminar Pedido":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- ELIMINAR UN PEDIDO ---")
-                        pedidos = self._ped_servicio.listar()
+                        pedidos = self._ped_servicio.listar(self._usuario)
                         if not pedidos:
                             print(Fore.YELLOW + "! No hay pedidos registrados en el sistema")
                             continuar()
@@ -486,7 +552,7 @@ class MenuAdministrador(Menu):
                         ).ask()
                         match confirmar:
                             case "Si":
-                                self._ped_servicio.eliminar(id_ped)
+                                self._ped_servicio.eliminar(self._usuario, id_ped)
                                 print(Fore.GREEN + "✓ Pedido y detalles eliminados con exito")
                                 continuar()
 

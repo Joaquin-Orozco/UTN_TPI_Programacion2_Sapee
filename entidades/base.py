@@ -2,12 +2,12 @@ from abc import ABC,abstractmethod
 from datetime import datetime
 
 class Base(ABC):
-    CONTADOR_ID = 0
+    CONTADOR_ID: int = 0
     def __init__(self)->None:
         Base.CONTADOR_ID += 1
-        self.__id = Base.CONTADOR_ID
-        self.__eliminado = False
-        self.__creado_en : datetime = datetime.now()
+        self.__id: int = Base.CONTADOR_ID
+        self.__eliminado: bool = False
+        self.__creado_en: datetime = datetime.now()
 
     @property
     def id(self)->int:

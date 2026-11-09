@@ -5,7 +5,7 @@ from excepciones.food_store_error import FoodStoreError
 init(autoreset=True)
 
 class MenuCliente(Menu):
-    def mostrar(self):
+    def mostrar(self) -> bool:
         while True:
             limpiar_consola()
             opcion = questionary.select(
@@ -17,7 +17,7 @@ class MenuCliente(Menu):
                     case "1. Ver categorias":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- LISTA DE CATEGORIAS ---")
-                        categorias = self._cat_servicio.listar()
+                        categorias = self._cat_servicio.listar(self._usuario)
                         if not categorias:
                             print(Fore.LIGHTYELLOW_EX + "! No hay categorias existentes")
                             continuar()
@@ -30,7 +30,9 @@ class MenuCliente(Menu):
                     case "2. Ver productos disponibles":
                         limpiar_consola()
                         print(Fore.LIGHTBLUE_EX + "--- LISTA DE PRODUCTOS ---")
-                        productos = self._prod_servicio.listar_disponibles_clientes()
+                        productos = self._prod_servicio.listar_disponibles_clientes(
+                            self._usuario
+                        )
                         if not productos:
                             print(Fore.LIGHTYELLOW_EX + "! No hay productos disponibles con stock")
                             continuar()
@@ -51,6 +53,29 @@ class MenuCliente(Menu):
                         else:
                             for ped in pedidos:
                                 print(ped)
+                            seleccion = questionary.select(
+                                message="Seleccione un pedido para ver sus detalles:",
+                                choices=[
+                                    f"{pedido.id}. Pedido del {pedido.fecha:%d/%m/%Y} "
+                                    f"({pedido.estado.name})"
+                                    for pedido in pedidos
+                                ]
+                                + ["0. Volver"],
+                            ).ask()
+                            if seleccion and seleccion != "0. Volver":
+                                try:
+                                    id_pedido = int(seleccion.split(".", maxsplit=1)[0])
+                                    pedido = self._ped_servicio.buscar_por_id(
+                                        id_pedido, self._usuario
+                                    )
+                                    print(f"Fecha: {pedido.fecha:%d/%m/%Y}")
+                                    print(f"Estado: {pedido.estado.name}")
+                                    print(f"Forma de pago: {pedido.forma_pago.name}")
+                                    for detalle in pedido.detalles_pedidos:
+                                        print(detalle)
+                                    print(f"Total: ${pedido.total:.2f}")
+                                except ValueError:
+                                    print(Fore.RED + "X Selección de pedido inválida")
                             continuar()
 
                     case "4. Mis datos":

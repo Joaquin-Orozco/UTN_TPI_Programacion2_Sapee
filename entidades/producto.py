@@ -1,14 +1,38 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from entidades.base import Base
-from excepciones.food_store_error import DatoInvalidoError,PrecioInvalidoError,StockInvalidoError
+from excepciones.food_store_error import DatoInvalidoError, PrecioInvalidoError, StockInvalidoError
+
+if TYPE_CHECKING:
+    from entidades.categoria import Categoria
+
+
 class Producto(Base):
-    def __init__(self,nombre:str,precio:float,descripcion:str,stock:int,imagen:str,disponible:bool)->None:
+    def __init__(
+        self,
+        nombre: str,
+        precio: float,
+        descripcion: str,
+        stock: int,
+        imagen: str,
+        disponible: bool,
+    ) -> None:
         super().__init__()
         self.nombre = nombre
         self.precio = precio
         self.descripcion = descripcion
         self.stock = stock
-        self.__imagen = imagen
-        self.__disponible = disponible
+        self.imagen = imagen
+        self.disponible = disponible
+        self.__nombre: str
+        self.__precio: float
+        self.__descripcion: str
+        self.__stock: int
+        self.__imagen: str
+        self.__disponible: bool
+        self.__categoria: Categoria | None = None
 
     @property
     def nombre(self)->str:
@@ -28,6 +52,9 @@ class Producto(Base):
     @property
     def disponible(self)->bool:
         return self.__disponible
+    @property
+    def categoria(self) -> Categoria | None:
+        return self.__categoria
 
     @nombre.setter
     def nombre(self,nombre:str)->None:
@@ -36,6 +63,12 @@ class Producto(Base):
         if nombre.strip() == "":
             raise DatoInvalidoError("El nombre del produdcto no puede quedar vacio")
         self.__nombre = nombre.strip()
+
+    @imagen.setter
+    def imagen(self, imagen: str) -> None:
+        if not isinstance(imagen, str):
+            raise DatoInvalidoError("La imagen debe ser una ruta de texto")
+        self.__imagen = imagen.strip()
 
     @descripcion.setter
     def descripcion(self,descripcion:str)->None:
@@ -51,7 +84,7 @@ class Producto(Base):
             raise DatoInvalidoError("El precio del producto debe ser un numero")
         if precio < 0:
             raise PrecioInvalidoError("El precio del producto no puede ser negativo")
-        self.__precio = precio
+        self.__precio = float(precio)
 
     @stock.setter
     def stock(self,cantidad:int)->None:
@@ -60,8 +93,6 @@ class Producto(Base):
         if cantidad < 0:
             raise StockInvalidoError("El stock del producto no puede ser negativo")
         self.__stock = cantidad
-        if self.__stock == 0:
-            self.__disponible = False
 
     @disponible.setter
     def disponible(self, disponible: bool) -> None:
@@ -69,7 +100,26 @@ class Producto(Base):
             raise DatoInvalidoError("La disponibilidad debe ser un booleano")
         self.__disponible = disponible
 
+    def _asignar_categoria(self, categoria: Categoria | None) -> None:
+        from entidades.categoria import Categoria
+
+        if categoria is not None and not isinstance(categoria, Categoria):
+            raise DatoInvalidoError("La categoría del producto no es válida")
+        if categoria is not None and categoria.eliminado:
+            raise DatoInvalidoError("No se puede asociar un producto a una categoría eliminada")
+        anterior = self.__categoria
+        if anterior is categoria:
+            return
+        self.__categoria = categoria
+        if anterior is not None:
+            anterior._quitar_producto(self)
+        if categoria is not None:
+            categoria._agregar_producto_interno(self)
 
     def __str__(self)->str:
         disp = "Disponible" if self.__disponible else "No disponible"
-        return f"ID: {self.id} | {self.nombre} | ${self.precio} | {self.descripcion} | Stock: {self.stock} | {disp}"
+        categoria = self.categoria.nombre if self.categoria is not None else "Sin categoría"
+        return (
+            f"ID: {self.id} | {self.nombre} | ${self.precio} | {self.descripcion} "
+            f"| Stock: {self.stock} | {disp} | Categoría: {categoria}"
+        )

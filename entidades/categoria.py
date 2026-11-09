@@ -7,7 +7,9 @@ class Categoria(Base):
         super().__init__()
         self.nombre = nombre
         self.descripcion = descripcion
-        self.__productos : list[Producto] = []
+        self.__nombre: str
+        self.__descripcion: str
+        self.__productos: list[Producto] = []
 
     @property
     def nombre(self)->str:
@@ -38,12 +40,21 @@ class Categoria(Base):
     def agregar_producto(self,producto:Producto)->None:
         if not isinstance(producto,Producto):
             raise DatoInvalidoError("Solo se pueden agregar instancias de la clase Producto")
+        if self.eliminado:
+            raise DatoInvalidoError("No se pueden agregar productos a una categoría eliminada")
+        producto._asignar_categoria(self)
+
+    def _agregar_producto_interno(self, producto: Producto) -> None:
         if producto not in self.__productos:
             self.__productos.append(producto)
 
-    def remover_producto(self,producto:Producto)->None:
+    def _quitar_producto(self, producto: Producto) -> None:
         if producto in self.__productos:
             self.__productos.remove(producto)
+
+    def remover_producto(self,producto:Producto)->None:
+        if producto in self.__productos:
+            producto._asignar_categoria(None)
 
     def __str__(self)->str:
         return f"ID:{self.id} | {self.nombre} | {self.descripcion}"

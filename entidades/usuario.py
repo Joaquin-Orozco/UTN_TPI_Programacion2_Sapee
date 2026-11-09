@@ -9,8 +9,14 @@ class Usuario(Base):
         self.apellido = apellido
         self.mail = mail
         self.celular = celular
-        self.__contrasenia = contrasenia
+        self.actualizar_contrasenia(contrasenia)
         self.rol = rol
+        self.__nombre: str
+        self.__apellido: str
+        self.__mail: str
+        self.__celular: str
+        self.__contrasenia: str
+        self.__rol: Rol
 
     @property
     def nombre(self)->str:
@@ -74,7 +80,11 @@ class Usuario(Base):
         return False
 
     def actualizar_contrasenia(self,contrasenia:str)->None:
-        if not contrasenia or len(contrasenia.strip()) < 3:
+        if (
+            not isinstance(contrasenia, str)
+            or not contrasenia
+            or len(contrasenia.strip()) < 3
+        ):
             raise DatoInvalidoError("La contrasenia es muy corta")
         self.__contrasenia = contrasenia.strip()
         

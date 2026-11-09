@@ -8,13 +8,18 @@ from excepciones.food_store_error import DatoInvalidoError, StockInsuficienteErr
 from datetime import date
 
 class Pedido(Base,Calculable):
-    def __init__(self,forma_pago:FormaPago,usuario:Usuario):
+    def __init__(self, forma_pago: FormaPago, usuario: Usuario) -> None:
         super().__init__()
         self.__fecha : date = date.today()
         self.__estado = Estado.PENDIENTE
         self.__total : float = 0.0
         self.forma_pago = forma_pago
         self.usuario = usuario
+        self.__fecha: date
+        self.__estado: Estado
+        self.__total: float
+        self.__forma_pago: FormaPago
+        self.__usuario: Usuario
         self.__detalles_pedidos : list[DetallePedido] = []
 
     @property
@@ -49,7 +54,7 @@ class Pedido(Base,Calculable):
         self.__estado = estado
 
     @usuario.setter
-    def usuario(self,usuario:Usuario):
+    def usuario(self,usuario:Usuario)->None:
         if not isinstance(usuario,Usuario):
             raise DatoInvalidoError("El usuario no es valido")
         if usuario.eliminado:
@@ -64,7 +69,7 @@ class Pedido(Base,Calculable):
         self.__total = total
 
     def agregar_detalle(self,cantidad:int,producto:Producto)->None:
-        if cantidad <= 0:
+        if not isinstance(cantidad, int) or isinstance(cantidad, bool) or cantidad <= 0:
             raise DatoInvalidoError("La cantidad debe ser mayor a cero")
         if not isinstance(producto,Producto):
             raise DatoInvalidoError("El producto no es valido")
@@ -72,7 +77,7 @@ class Pedido(Base,Calculable):
             raise DatoInvalidoError(f"El producto {producto.nombre} no esta disponible")
 
         existente = self.buscar_detalle_por_producto(producto)
-        stock_necesario = cantidad + (existente.cantidad if existente else 0.0)
+        stock_necesario = cantidad + (existente.cantidad if existente else 0)
 
         if stock_necesario > producto.stock:
             raise StockInsuficienteError(f"Stock insuficiente para {producto.nombre}, stock disponible: {producto.stock}")
@@ -93,11 +98,18 @@ class Pedido(Base,Calculable):
             self.calcular_total()
 
     def buscar_detalle_por_producto(self,producto:Producto)->DetallePedido | None:
+        if not isinstance(producto, Producto):
+            raise DatoInvalidoError("El producto no es válido")
         for detalle in self.__detalles_pedidos:
-            if detalle.producto.id == producto.id and not producto.eliminado:
+            if detalle.producto.id == producto.id:
                 return detalle
         return None
 
     def __str__(self)->str:
         fecha_formateada = self.fecha.strftime("%d/%m/%Y")
-        return f"ID: {self.id} | Fecha: {fecha_formateada} | Estado: {self.estado.name} | Pago: {self.forma_pago.name} | Total: ${self.total:.2f}"
+        return (
+            f"ID: {self.id} | Fecha: {fecha_formateada} | Usuario: "
+            f"{self.usuario.nombre} {self.usuario.apellido} ({self.usuario.mail}) "
+            f"| Estado: {self.estado.name} | Pago: {self.forma_pago.name} "
+            f"| Total: ${self.total:.2f}"
+        )

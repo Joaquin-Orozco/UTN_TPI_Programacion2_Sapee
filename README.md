@@ -1,27 +1,64 @@
-# TPI_Programacion2
-Sistema de gestión de pedidos de comida en consola. El programa aplica los conceptos de POO para procesar, validar y organizar el flujo de un comercio de comida rapida mediante el uso de python.<br>
-<br>
-Universidad Tecnológica Nacional<br>
-Cátedra: 1PRO6, Comisión 6, Programacion 2<br>
-Alumno: Nahuel Ismael Leyes Moyano<br>
-Profesores:Cinthia Vanina Rigoni Guerra, Ariel Edgardo Enferrel<br>
-<br>
-Credenciales de Acceso<br>
-Para iniciar sesion y evaluar el flujo del programa, utilice los siguientes datos precargados:<br>
--Usuario administrador: "admin@foodstore.com"/"admin123"<br>
--Usuario cliente: "cliente@foodstore.com"/"cliente123"<br>
-<br>
-El desarrollo del programa ha sido dividido en capas con responsabilidades aisladas:<br>
--'main.py': Ejecuta el inicio de sesión además de los respectivos menus<br>
--'pruebas.py': Ejecuta los test automaticos, validando calculos, stock, y la correcta captura de excepciones<br>
--'/entidades': Capa que contiene el modelo del dominio('base.py','calculable.py','categoria.py','producto.py','detalle_pedido.py','pedido.py','usuario.py'). Aplica encapsulamiento y relaciones de asociacion, agregacion y composicion<br>
--'/servicios': Capa encargada de las reglas de negocio aisladas de la consola ('categoria_servicio.py','producto_servicio.py','usuario_servicio.py','pedido_servicio.py')<br>
--'/consola': Capa que contiene las interfaces graficas de la consola mediante menus interactivos ('menu.py','menu_administrador.py','menu_cliente.py')<br>
--'/excepciones' y '/enums': Capas de soporte para tipado seguro y violaciones a las reglas de negocio personalizados bajo la clase padre 'FoodStoreError'<br>
-<br>
-Archivo ejecutable<br>
-En la carpeta raíz se encuentra el ejecutable del programa con el nombre "FoodStore.exe" creado gracias a la libreria externa pyinstaller, su funcionamiento es exactamente igual al usarlo en VStudio, simplifica la forma de ejecutar el programa<br>
-<br>
-Librerías de terceros: Questionary, Colorama, PyInstaller<br>
-GitHub repositorio: https://github.com/Isma54/UTN_TPI_Programacion2<br>
-Video Demostración: PENDIENTE
+# Food Store — TPI Programación II
+
+Sistema de consola para gestionar categorías, productos, usuarios y pedidos,
+desarrollado para Programación II de la Universidad Tecnológica Nacional. Los
+datos se guardan en memoria durante la ejecución; al cerrar el programa se
+pierden.
+
+## Requisitos
+
+- Python 3.12 o superior.
+- Dependencias de consola: `questionary` y `colorama`.
+
+Instalación de dependencias:
+
+```powershell
+python -m pip install questionary colorama
+```
+
+## Ejecución
+
+Desde la carpeta del proyecto:
+
+```powershell
+python main.py
+```
+
+Para ejecutar las pruebas automatizadas:
+
+```powershell
+python pruebas.py
+```
+
+## Credenciales de ejemplo
+
+`main.py` carga estos usuarios al iniciar:
+
+- Administrador: `admin@foodstore.com` / `admin123`
+- Cliente: `cliente@foodstore.com` / `cliente123`
+
+## Funcionalidades
+
+- Inicio de sesión con límite de tres intentos y menús diferenciados por rol.
+- ABM lógico de categorías, productos y usuarios para ADMIN.
+- Consulta de categorías, productos disponibles y pedidos propios para USUARIO.
+- Creación y administración de pedidos con validación y actualización transaccional
+  del stock.
+- Conservación del precio unitario histórico de cada detalle de pedido.
+- Validaciones y excepciones propias en las entidades y los servicios.
+
+## Organización
+
+- `entidades/`: modelo del dominio y validaciones.
+- `servicios/`: colecciones, reglas de negocio y autorización.
+- `consola/`: menús de administrador y cliente.
+- `enums/`: roles, estados y formas de pago.
+- `excepciones/`: excepciones del dominio.
+- `main.py`: inicialización y ciclo de sesión.
+- `pruebas.py`: pruebas automatizadas con `unittest`.
+
+El ejecutable `FoodStore.exe` también se incluye en la carpeta raíz.
+
+Repositorio: <https://github.com/Isma54/UTN_TPI_Programacion2>
+
+Video demostrativo: pendiente.
