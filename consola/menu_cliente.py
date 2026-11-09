@@ -39,7 +39,7 @@ class MenuCliente(Menu):
 
                         else:
                             for product in productos:
-                                print(product)
+                                self._mostrar_producto(product)
                             continuar()
 
                     case "3. Mis pedidos":

@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from entidades.base import Base
 from excepciones.food_store_error import DatoInvalidoError, PrecioInvalidoError, StockInvalidoError
-
-if TYPE_CHECKING:
-    from entidades.categoria import Categoria
 
 
 class Producto(Base):
@@ -32,7 +27,6 @@ class Producto(Base):
         self.__stock: int
         self.__imagen: str
         self.__disponible: bool
-        self.__categoria: Categoria | None = None
 
     @property
     def nombre(self)->str:
@@ -52,9 +46,6 @@ class Producto(Base):
     @property
     def disponible(self)->bool:
         return self.__disponible
-    @property
-    def categoria(self) -> Categoria | None:
-        return self.__categoria
 
     @nombre.setter
     def nombre(self,nombre:str)->None:
@@ -100,26 +91,9 @@ class Producto(Base):
             raise DatoInvalidoError("La disponibilidad debe ser un booleano")
         self.__disponible = disponible
 
-    def _asignar_categoria(self, categoria: Categoria | None) -> None:
-        from entidades.categoria import Categoria
-
-        if categoria is not None and not isinstance(categoria, Categoria):
-            raise DatoInvalidoError("La categoría del producto no es válida")
-        if categoria is not None and categoria.eliminado:
-            raise DatoInvalidoError("No se puede asociar un producto a una categoría eliminada")
-        anterior = self.__categoria
-        if anterior is categoria:
-            return
-        self.__categoria = categoria
-        if anterior is not None:
-            anterior._quitar_producto(self)
-        if categoria is not None:
-            categoria._agregar_producto_interno(self)
-
     def __str__(self)->str:
         disp = "Disponible" if self.__disponible else "No disponible"
-        categoria = self.categoria.nombre if self.categoria is not None else "Sin categoría"
         return (
             f"ID: {self.id} | {self.nombre} | ${self.precio} | {self.descripcion} "
-            f"| Stock: {self.stock} | {disp} | Categoría: {categoria}"
+            f"| Stock: {self.stock} | {disp}"
         )

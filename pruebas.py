@@ -114,9 +114,20 @@ class FoodStoreTests(unittest.TestCase):
         self.categorias.asociar_producto_a_categoria(
             self.admin, otra.id, self.producto
         )
-        self.assertEqual(self.producto.categoria, otra)
+        self.assertIs(
+            self.categorias.buscar_categoria_de_producto(self.producto), otra
+        )
         self.assertNotIn(self.producto, self.categoria.productos)
         self.assertIn(self.producto, otra.productos)
+        self.assertFalse(hasattr(self.producto, "categoria"))
+        self.assertFalse(hasattr(self.producto, "_Producto__categoria"))
+
+    def test_category_service_can_disassociate_product(self) -> None:
+        self.categorias.desasociar_producto_de_categoria(
+            self.admin, self.categoria.id, self.producto
+        )
+        self.assertNotIn(self.producto, self.categoria.productos)
+        self.assertIsNone(self.categorias.buscar_categoria_de_producto(self.producto))
 
     def test_product_edit_includes_image_and_category(self) -> None:
         otra = self.categorias.crear_categoria(self.admin, "Bebidas", "Bebidas")
@@ -127,8 +138,10 @@ class FoodStoreTests(unittest.TestCase):
             categoria=otra,
         )
         self.assertEqual(self.producto.imagen, "nueva.png")
-        self.assertEqual(self.producto.categoria, otra)
-        self.assertIn("Bebidas", str(self.producto))
+        self.assertIs(
+            self.categorias.buscar_categoria_de_producto(self.producto), otra
+        )
+        self.assertNotIn("Bebidas", str(self.producto))
 
     def test_invalid_product_edit_does_not_partially_update(self) -> None:
         with self.assertRaises(PrecioInvalidoError):

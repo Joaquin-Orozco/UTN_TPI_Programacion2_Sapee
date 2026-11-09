@@ -51,8 +51,34 @@ class CategoriaServicio:
         self, actor: Usuario, id_categoria: int, producto: Producto
     ) -> None:
         validar_administrador(actor)
+        if not isinstance(producto, Producto):
+            raise DatoInvalidoError("Solo se pueden asociar instancias de Producto")
         categoria = self.buscar_por_id(id_categoria, actor)
         categoria.agregar_producto(producto)
+        for existente in self.__categorias:
+            if existente is not categoria:
+                existente.remover_producto(producto)
+
+    def desasociar_producto_de_categoria(
+        self, actor: Usuario, id_categoria: int, producto: Producto
+    ) -> None:
+        validar_administrador(actor)
+        if not isinstance(producto, Producto):
+            raise DatoInvalidoError("Solo se pueden desasociar instancias de Producto")
+        categoria = self.buscar_por_id(id_categoria, actor)
+        if producto not in categoria.productos:
+            raise EntidadNoEncontradaError(
+                f"El producto {producto.id} no pertenece a la categoría {categoria.nombre}"
+            )
+        categoria.remover_producto(producto)
+
+    def buscar_categoria_de_producto(
+        self, producto: Producto
+    ) -> Categoria | None:
+        for categoria in self.__categorias:
+            if producto in categoria.productos:
+                return categoria
+        return None
 
     def contar_activos_por_categoria(
         self, id_categoria: int, actor: Usuario

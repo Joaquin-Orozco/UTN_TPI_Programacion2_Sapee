@@ -36,7 +36,9 @@ class ProductoServicio:
         ):
             raise DatoInvalidoError("La categoría del producto no es válida")
         producto = Producto(nombre, precio, descripcion, stock, imagen, disponible)
-        categoria.agregar_producto(producto)
+        self.__categoria_servicio.asociar_producto_a_categoria(
+            actor, categoria.id, producto
+        )
         self.__productos.append(producto)
         return producto
 
@@ -119,7 +121,9 @@ class ProductoServicio:
         if disponible is not None:
             producto.disponible = disponible
         if categoria is not None:
-            categoria.agregar_producto(producto)
+            self.__categoria_servicio.asociar_producto_a_categoria(
+                actor, categoria.id, producto
+            )
         return producto
 
     def eliminar(self, actor: Usuario, id_producto: int) -> None:

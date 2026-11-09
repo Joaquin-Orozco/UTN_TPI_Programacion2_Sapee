@@ -41,6 +41,8 @@ python pruebas.py
 
 - Inicio de sesión con límite de tres intentos y menús diferenciados por rol.
 - ABM lógico de categorías, productos y usuarios para ADMIN.
+- Relación unidireccional: las categorías mantienen sus productos y los productos
+  no guardan una referencia a su categoría.
 - Consulta de categorías, productos disponibles y pedidos propios para USUARIO.
 - Creación y administración de pedidos con validación y actualización transaccional
   del stock.

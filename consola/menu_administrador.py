@@ -43,7 +43,14 @@ class MenuAdministrador(Menu):
             limpiar_consola()
             seleccion = questionary.select(
                 message= "--- GESTION DE CATEGORIAS (ADMIN) ---",
-                choices= ["1. Listar", "2. Crear", "3. Editar", "4. Eliminar", "0. Volver"],
+                choices= [
+                    "1. Listar",
+                    "2. Crear",
+                    "3. Editar",
+                    "4. Eliminar",
+                    "5. Desasociar producto",
+                    "0. Volver",
+                ],
             ).ask()
             try: 
                 match seleccion:
@@ -119,6 +126,41 @@ class MenuAdministrador(Menu):
                                 print("Volviendo al menu...")
                                 continuar()
 
+                    case "5. Desasociar producto":
+                        limpiar_consola()
+                        print(Fore.LIGHTBLUE_EX + "--- DESASOCIAR PRODUCTO ---")
+                        categorias = self._cat_servicio.listar(self._usuario)
+                        if not categorias:
+                            print(Fore.YELLOW + "! No hay categorias disponibles")
+                            continuar()
+                            continue
+                        for cat in categorias:
+                            print(cat)
+                        id_cat = int(input("ID de la categoria: "))
+                        categoria = self._cat_servicio.buscar_por_id(
+                            id_cat, self._usuario
+                        )
+                        productos = [
+                            producto
+                            for producto in categoria.productos
+                            if not producto.eliminado
+                        ]
+                        if not productos:
+                            print(Fore.YELLOW + "! La categoria no tiene productos asociados")
+                            continuar()
+                            continue
+                        for producto in productos:
+                            self._mostrar_producto(producto)
+                        id_prod = int(input("ID del producto a desasociar: "))
+                        producto = self._prod_servicio.buscar_por_id(
+                            id_prod, self._usuario
+                        )
+                        self._cat_servicio.desasociar_producto_de_categoria(
+                            self._usuario, id_cat, producto
+                        )
+                        print(Fore.GREEN + "✓ Producto desasociado con exito")
+                        continuar()
+
                     case "0. Volver":
                         print("Volviendo al menu principal...")
                         continuar()
@@ -150,7 +192,7 @@ class MenuAdministrador(Menu):
 
                         else:
                             for product in productos:
-                                print(product)
+                                self._mostrar_producto(product)
                             continuar()
 
                     case "2. Crear":
@@ -203,7 +245,7 @@ class MenuAdministrador(Menu):
                             continuar()
                             continue
                         for p in productos:
-                            print(p)
+                            self._mostrar_producto(p)
 
                         id_prod = int(input("ID del producto a editar: "))
                         self._prod_servicio.buscar_por_id(id_prod, self._usuario)
@@ -265,7 +307,7 @@ class MenuAdministrador(Menu):
                             continuar()
                             continue
                         for p in productos:
-                            print(p)
+                            self._mostrar_producto(p)
                         id_prod = int(input("ID del producto a eliminar: "))
                         confirmar = questionary.select(
                             message= "¿Eliminar?",
@@ -465,7 +507,7 @@ class MenuAdministrador(Menu):
                                 self._usuario
                             )
                             for p in productos:
-                                print(p)
+                                self._mostrar_producto(p)
                             id_prod = int(input("ID del producto a agregar (0 para terminar el carrito): "))
                             if id_prod == 0:
                                 break

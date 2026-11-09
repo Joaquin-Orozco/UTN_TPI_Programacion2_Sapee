@@ -42,19 +42,12 @@ class Categoria(Base):
             raise DatoInvalidoError("Solo se pueden agregar instancias de la clase Producto")
         if self.eliminado:
             raise DatoInvalidoError("No se pueden agregar productos a una categoría eliminada")
-        producto._asignar_categoria(self)
-
-    def _agregar_producto_interno(self, producto: Producto) -> None:
         if producto not in self.__productos:
             self.__productos.append(producto)
 
-    def _quitar_producto(self, producto: Producto) -> None:
-        if producto in self.__productos:
-            self.__productos.remove(producto)
-
     def remover_producto(self,producto:Producto)->None:
         if producto in self.__productos:
-            producto._asignar_categoria(None)
+            self.__productos.remove(producto)
 
     def __str__(self)->str:
         return f"ID:{self.id} | {self.nombre} | {self.descripcion}"

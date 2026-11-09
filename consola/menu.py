@@ -3,6 +3,7 @@ from enum import Enum
 import os
 from typing import TypeVar
 import questionary
+from entidades.producto import Producto
 from entidades.usuario import Usuario
 from servicios.categoria_servicio import CategoriaServicio
 from servicios.pedido_servicio import PedidoServicio
@@ -30,6 +31,11 @@ class Menu(ABC):
     @abstractmethod
     def mostrar(self) -> bool:
         pass
+
+    def _mostrar_producto(self, producto: Producto) -> None:
+        categoria = self._cat_servicio.buscar_categoria_de_producto(producto)
+        nombre_categoria = categoria.nombre if categoria is not None else "Sin categoría"
+        print(f"{producto} | Categoría: {nombre_categoria}")
 
 
 def crear_menu(
